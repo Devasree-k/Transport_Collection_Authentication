@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+SQLAlchemy>=2.0
+asyncpg
+pydantic>=2.0
+python-dotenv
+PyJWT
+pwdlib[argon2]
+email-validator
+python-multipart
+alembic
+sqlalchemy[asyncio]
+
