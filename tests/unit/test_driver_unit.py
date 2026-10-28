@@ -76,10 +76,10 @@ def test_transport_collection_calculations():
         collection_repository=AsyncMock(),
     )
 
-    # Act: execute the actual calculation function.
+    # execute the actual calculation function.
     result = service.calculate_totals(data)
 
-    # Assert: verify the calculated values.
+    # verify the calculated values.
     assert result["total_trips"] == 12
     assert result["total_collection"] == 12000
     assert result["total_expense"] == 2500
