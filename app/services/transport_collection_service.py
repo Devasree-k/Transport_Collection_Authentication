@@ -77,8 +77,16 @@ class TransportCollectionService:
             raise
 
     # to retrive all the collections
-    async def get_collections(self):
-        return await self.repository.get_all()
+    async def get_collections(self, page:int=1, limit: int=10):
+        if page < 1:
+            raise ValueError("Page must be greater than 0")
+
+        if limit < 1 or limit > 100:
+            raise ValueError("Limit must be between 1 and 100")
+
+        skip = (page - 1) * limit
+        return await self.repository.get_all(skip=skip, limit=limit)
+
 
     async def update_collection(
         self,

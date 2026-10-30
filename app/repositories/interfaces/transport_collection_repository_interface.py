@@ -12,7 +12,7 @@ class TransportCollectionRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_all(self) -> list[TransportCollection]:
+    async def get_all(self, skip: int=0, limit: int=10) -> list[TransportCollection]:
         pass
 
     @abstractmethod

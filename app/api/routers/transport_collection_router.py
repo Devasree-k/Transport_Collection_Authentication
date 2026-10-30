@@ -43,11 +43,13 @@ async def add_collection(
 
 )
 async def list_collections(
+    page: int = 1,
+    limit: int = 10,
     service: TransportCollectionService = Depends(
         get_collection_service
     ),
 ):
-    return await service.get_collections()
+    return await service.get_collections(page=page, limit=limit)
 
 
 @router.get(

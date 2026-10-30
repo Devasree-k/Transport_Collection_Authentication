@@ -11,20 +11,30 @@ from app.models.transport_collection_model import TransportCollection
 # from repositories.driver_repository import DriverRepository
 from app.repositories.interfaces.driver_repository_interface import DriverRepositoryInterface
 
+
+import asyncio
+import logging
+
+from app.services.email_service import EmailService
+
+logger = logging.getLogger(__name__)
+
+
+
 class DriverService:
 
-    def __init__(self, db: AsyncSession, driver_repository:DriverRepositoryInterface):
+    def __init__(self, db: AsyncSession, driver_repository:DriverRepositoryInterface, email_service: EmailService):
         self.db = db
         self.driver_repository = driver_repository
+        self.email_service = email_service
 
-    async def create_driver(self, data):
+    async def create_driver(self, data)->Driver:
         driver = Driver(**data.model_dump())
 
         try:
             await self.driver_repository.create(driver)
             await self.db.commit()
             await self.db.refresh(driver)
-            return driver
 
         except IntegrityError:
             await self.db.rollback()
@@ -33,8 +43,27 @@ class DriverService:
                 detail="Phone number already exists",
             )
 
-    async def get_drivers(self):
-        return await self.driver_repository.get_all()
+        # Send admin notification after successful database commit
+        email_sent = await self.email_service.send_driver_notification_async(
+            driver_name=driver.name,
+            phone=driver.phone,
+            license_number=driver.license_number
+        )
+
+        if not email_sent:
+            logger.warning("Driver registered, but admin email notification failed.")
+
+        return driver
+
+
+    async def get_drivers(self, page:int=1, limit : int=10):
+        if page<1:
+            raise ValueError("Page must be greater than 0")
+        if limit<1 or limit>100:
+            raise ValueError("Limit must be between 1 and 100")
+
+        skip = (page - 1) * limit
+        return await self.driver_repository.get_all(skip=skip, limit=limit)
 
     async def get_driver(self, driver_id: int):
         driver = await self.driver_repository.get_by_id(driver_id)

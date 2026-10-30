@@ -14,13 +14,16 @@ DATABASE_URL = URL.create(
 )
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-
 if not JWT_SECRET_KEY:
     raise RuntimeError("JWT_SECRET_KEY must be set in .env")
-
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(
-    os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15")
-)
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15"))
+REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+LOG_DIR = os.getenv("LOG_DIR", "logs")
 
 
+    
+EMAIL_SENDER = os.getenv("EMAIL_SENDER")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")

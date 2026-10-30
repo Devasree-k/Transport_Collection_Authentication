@@ -35,12 +35,11 @@ async def test_list_drivers_api():
     mock_service = AsyncMock()
     mock_service.get_drivers.return_value = [FakeDriver()]
 
-    app.dependency_overrides[get_current_user] = (
-        fake_current_user
-    )
-    app.dependency_overrides[get_driver_service] = (
-        lambda: mock_service
-    )
+    async def fake_driver_service():
+        return mock_service
+
+    app.dependency_overrides[get_current_user] = fake_current_user
+    app.dependency_overrides[get_driver_service] = fake_driver_service
 
     try:
         transport = ASGITransport(app=app)
@@ -64,8 +63,8 @@ async def test_list_drivers_api():
         mock_service.get_drivers.assert_awaited_once()
 
     finally:
-        # Restore the application's normal dependencies.
-        app.dependency_overrides.clear()
+        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_driver_service, None)
 
 
 @pytest.mark.asyncio
@@ -76,12 +75,11 @@ async def test_create_driver_forbidden_for_driver_role():
 
     mock_service = AsyncMock()
 
-    app.dependency_overrides[get_current_user] = (
-        fake_driver_user
-    )
-    app.dependency_overrides[get_driver_service] = (
-        lambda: mock_service
-    )
+    async def fake_driver_service():
+        return mock_service
+
+    app.dependency_overrides[get_current_user] = fake_driver_user
+    app.dependency_overrides[get_driver_service] = fake_driver_service
 
     payload = {
         "name": "Arun",
@@ -94,9 +92,15 @@ async def test_create_driver_forbidden_for_driver_role():
     try:
         transport = ASGITransport(app=app)
 
-        async with AsyncClient(transport=transport, base_url="http://test",) as client:
+        async with AsyncClient(
+            transport=transport,
+            base_url="http://test",
+        ) as client:
 
-            response = await client.post("/api/drivers/", json=payload,)
+            response = await client.post(
+                "/api/drivers/",
+                json=payload,
+            )
 
         assert response.status_code == 403
 
@@ -105,5 +109,5 @@ async def test_create_driver_forbidden_for_driver_role():
         )
 
     finally:
-        app.dependency_overrides.clear()
-
+        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_driver_service, None)

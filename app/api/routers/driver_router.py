@@ -41,9 +41,11 @@ async def add_driver(
             ],
             )
 async def list_drivers(
+    page: int=1,
+    limit : int=10, 
     service: DriverService = Depends(get_driver_service),
 )->list[DriverResponse]:
-    return await service.get_drivers()
+    return await service.get_drivers(page=page, limit=limit)
 
 
 # router to get driver with collection 

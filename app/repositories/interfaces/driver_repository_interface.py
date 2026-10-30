@@ -10,7 +10,7 @@ class DriverRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_all(self) -> list[Driver]:
+    async def get_all(self, skip: int=0, limit: int=10) -> list[Driver]:
         pass
 
     @abstractmethod
@@ -40,13 +40,3 @@ class DriverRepositoryInterface(ABC):
     # )-> Driver | None:
     #     pass
 
-
-
-
-    # @abstractmethod
-    # async def get_driver_report(
-    #     self,
-    #     start_date: date | None = None,
-    #     end_date: date | None = None,
-    # ) -> list[dict[str, Any]]:
-    #     pass
