@@ -15,6 +15,13 @@ from app.database.base import Base
 from app.models.driver_model import Driver
 from app.models.transport_collection_model import TransportCollection
 
+import pytest_asyncio
+
+from httpx import ASGITransport, AsyncClient
+
+from main import app
+from app.api.dependencies.database import get_database
+
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -48,4 +55,24 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
     async with test_engine.begin() as connection:
         await connection.run_sync(Base.metadata.drop_all)
 
-        
+
+@pytest_asyncio.fixture
+async def client(db_session):
+
+    async def override_get_db():
+
+        yield db_session
+
+    app.dependency_overrides[get_database] = override_get_db
+
+
+    transport = ASGITransport(app=app)
+
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://test",
+    ) as test_client:
+
+        yield test_client
+
+        app.dependency_overrides.clear()

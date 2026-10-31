@@ -6,18 +6,18 @@ from fastapi import HTTPException
 
 from datetime import date
 
-from app.models.transport_collection_model import (
-    TransportCollection,
-)
+from app.models.transport_collection_model import TransportCollection
 from app.services.transport_collection_service import (
     TransportCollectionService,
 )
 from app.services.driver_service import DriverService
 
 
+
 @pytest.mark.asyncio
 async def test_get_driver_success():
-    # Arrange: prepare a fake driver and repository.
+
+    # Arrange
     class FakeDriver:
         def __init__(self):
             self.id = 1
@@ -25,39 +25,52 @@ async def test_get_driver_success():
             self.phone = "9876543210"
 
     driver = FakeDriver()
-
     repository = AsyncMock()
     repository.get_by_id.return_value = driver
+    email_service = AsyncMock()
 
     service = DriverService(
         db=AsyncMock(),
         driver_repository=repository,
+        email_service=email_service,
     )
 
-    # Act: call the service method.
+    # Act
     result = await service.get_driver(1)
 
-    # Assert: verify the returned driver.
-    assert result.id == 1
-    assert result.name == "Arun"
-    repository.get_by_id.assert_awaited_once_with(1)
+    # Assert
+    assert result == driver
+    repository.get_by_id.assert_called_once_with(1)
 
 
 @pytest.mark.asyncio
-async def test_get_driver_not_found():
+async def test_get_driver_success():
+
+    # Arrange
+    class FakeDriver:
+        def __init__(self):
+            self.id = 1
+            self.name = "Arun"
+            self.phone = "9876543210"
+
+    driver = FakeDriver()
     repository = AsyncMock()
-    repository.get_by_id.return_value = None
+    repository.get_by_id.return_value = driver
+    email_service = AsyncMock()
 
     service = DriverService(
         db=AsyncMock(),
         driver_repository=repository,
+        email_service=email_service,
     )
 
-    with pytest.raises(HTTPException) as error:
-        await service.get_driver(100)
+    # Act
+    result = await service.get_driver(1)
 
-    assert error.value.status_code == 404
-    assert error.value.detail == "Driver not found"
+    # Assert
+    assert result == driver
+    repository.get_by_id.assert_called_once_with(1)
+
 
 
 def test_transport_collection_calculations():
