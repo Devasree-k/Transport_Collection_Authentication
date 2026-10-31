@@ -17,6 +17,7 @@ from app.api.routers.payment_router import router as payment_router
 from app.core.logging_config import configure_logging
 from app.database.connection import engine
 from app.middleware.observability import RequestLoggingMiddleware
+from app.api.routers.health_router import router as health_router
 
 
 # Configure logging
@@ -57,6 +58,7 @@ app.add_middleware(RequestLoggingMiddleware)
 
 
 # Register routers
+app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(driver_router)
 app.include_router(collection_router)
