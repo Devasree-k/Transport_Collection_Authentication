@@ -11,6 +11,8 @@ from app.api.routers.transport_collection_router import (
     router as collection_router,
 )
 from app.api.routers.report_router import router as report_router
+from app.api.routers.payment_router import router as payment_router
+
 
 from app.core.logging_config import configure_logging
 from app.database.connection import engine
@@ -59,6 +61,7 @@ app.include_router(auth_router)
 app.include_router(driver_router)
 app.include_router(collection_router)
 app.include_router(report_router)
+app.include_router(payment_router)
 
 
 # Home endpoint

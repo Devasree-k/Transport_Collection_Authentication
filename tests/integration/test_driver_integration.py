@@ -66,3 +66,4 @@ async def test_list_drivers(db_session):
 
     assert "Arun" in driver_names
     assert "Priya" in driver_names
+

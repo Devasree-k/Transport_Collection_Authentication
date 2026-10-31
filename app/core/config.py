@@ -22,8 +22,11 @@ REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 LOG_DIR = os.getenv("LOG_DIR", "logs")
 
-
     
 EMAIL_SENDER = os.getenv("EMAIL_SENDER")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
+
+
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")

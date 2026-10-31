@@ -1,14 +1,26 @@
 from datetime import datetime, timedelta, timezone
+
 from sqlalchemy.exc import IntegrityError
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.config import REFRESH_TOKEN_EXPIRE_DAYS
-from app.core.security import (create_access_token, create_refresh_token,
-    hash_password, hash_refresh_token, verify_password)
+from app.core.security import (
+    create_access_token, 
+    create_refresh_token,
+    hash_password, 
+    hash_refresh_token, 
+    verify_password
+    )
+
 from app.exceptions.custom_exception import AuthenticationError, RegistrationConflict
+
 from app.models.refresh_token_model import RefreshToken
 from app.models.user_model import User
+
 from app.repositories.interfaces.user_repository_interface import UserRepositoryInterface
 from app.repositories.interfaces.refresh_token_repository_interface import RefreshTokenRepositoryInterface
+
 from app.schemas.auth_schema import RegisterRequest
 import uuid
 
@@ -54,7 +66,7 @@ class AuthService:
         
         return user
 
-    async def _issue_token_pair(self, user: User) -> dict[str, str]:
+    async def issue_token_pair(self, user: User) -> dict[str, str]:
         raw_refresh = create_refresh_token()
         jti = str(uuid.uuid4())
 
@@ -67,11 +79,13 @@ class AuthService:
         await self.refresh_tokens.create(refresh_record)
         await self.db.commit()
         return {"access_token": create_access_token(user.id, user.role),
-                "refresh_token": raw_refresh, "token_type": "bearer"}
+                "refresh_token": raw_refresh, 
+                "token_type": "bearer"
+                }
 
     async def login(self, username: str, password: str) -> dict[str, str]:
         user = await self.authenticate(username, password)
-        return await self._issue_token_pair(user)
+        return await self.issue_token_pair(user)
 
     async def refresh(self, raw_token: str) -> dict[str, str]:
 
@@ -96,7 +110,7 @@ class AuthService:
         # Rotate: revoke the old token before issuing a replacement.
 
         record.revoked = True
-        result = await self._issue_token_pair(user)
+        result = await self.issue_token_pair(user)
         return result
 
     async def logout(self, raw_token: str) -> None:

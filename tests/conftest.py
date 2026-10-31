@@ -70,9 +70,9 @@ async def client(db_session):
     app.dependency_overrides[get_database] = override_get_db
 
 
-    transport = ASGITransport(app=app)
+    transport = ASGITransport(app=app)   # to make connection with fastapi and test code 
 
-    async with AsyncClient(
+    async with AsyncClient(    # asynchronous HTTP client provided by HTTPX.
         transport=transport,
         base_url="http://test",
     ) as test_client:
