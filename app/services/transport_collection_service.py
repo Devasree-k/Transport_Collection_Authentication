@@ -8,6 +8,13 @@ from app.repositories.implementations.transport_collection_repository import (
 
 from app.repositories.interfaces.transport_collection_repository_interface import TransportCollectionRepositoryInterface
 
+import math
+from datetime import date
+
+from app.schemas.transport_collection_schema import CollectionCreate
+
+
+
 class TransportCollectionService:
 
     def __init__(self, db: AsyncSession, collection_repository :TransportCollectionRepositoryInterface):
@@ -37,7 +44,7 @@ class TransportCollectionService:
         }
 
     # Read collection by id
-    async def get_collection(self, collection_id: int):
+    async def get_collection(self, collection_id: int) -> TransportCollection:
         collection = await self.repository.get_by_id(collection_id)
 
         if collection is None:
@@ -49,7 +56,7 @@ class TransportCollectionService:
         return collection
 
 #create a collection 
-    async def create_collection(self, data):
+    async def create_collection(self, data: CollectionCreate) -> TransportCollection:
         values = data.model_dump()
 
         driver = await self.repository.get_driver(
@@ -77,22 +84,56 @@ class TransportCollectionService:
             raise
 
     # to retrive all the collections
-    async def get_collections(self, page:int=1, limit: int=10):
+    async def get_collections(
+        self,
+        page: int = 1,
+        limit: int = 10,
+        driver_id: int | None = None,
+        start_date: date | None = None,
+        end_date: date | None = None,
+    ) -> dict:
+
         if page < 1:
             raise ValueError("Page must be greater than 0")
 
         if limit < 1 or limit > 100:
             raise ValueError("Limit must be between 1 and 100")
 
+        if start_date and end_date and start_date > end_date:
+            raise ValueError("start_date must not be after end_date")
+
         skip = (page - 1) * limit
-        return await self.repository.get_all(skip=skip, limit=limit)
+
+        items, total_items = await self.repository.get_all_paginated(
+            skip=skip,
+            limit=limit,
+            driver_id=driver_id,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        total_pages = math.ceil(total_items / limit)
+
+        return {
+            "items": items,
+            "pagination": {
+                "current_page": page,
+                "page_size": limit,
+                "total_items": total_items,
+                "total_pages": total_pages,
+                "has_next": page < total_pages,
+                "has_previous": page > 1 and total_pages > 0,
+                "next_page": page + 1 if page < total_pages else None,
+                "previous_page": page - 1 if page > 1 and total_pages > 0 else None,
+            },
+        }
 
 
     async def update_collection(
         self,
         collection_id: int,
         changes: dict,
-    ):
+    ) -> TransportCollection:
         collection = await self.get_collection(collection_id)
 
         values = {
@@ -138,7 +179,7 @@ class TransportCollectionService:
 
 
     # delete collection 
-    async def delete_collection(self, collection_id: int):
+    async def delete_collection(self, collection_id: int) -> dict:
         collection = await self.get_collection(collection_id)
 
         try:

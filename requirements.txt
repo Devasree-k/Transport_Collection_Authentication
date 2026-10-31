@@ -10,4 +10,7 @@ email-validator
 python-multipart
 alembic
 sqlalchemy[asyncio]
-
+pytest
+pytest-asyncio
+httpx
+aiosqlite

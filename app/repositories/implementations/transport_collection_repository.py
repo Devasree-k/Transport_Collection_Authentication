@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -17,6 +17,7 @@ from app.exceptions.custom_exception import (
     RegistrationConflict
 )
 
+from datetime import date
 
 logger = logging.getLogger(__name__)
 
@@ -76,25 +77,54 @@ class TransportCollectionRepository(
             raise RepositoryError( "Unable to retrieve collection") from exc
 
     # Get all collections with pagination
-    async def get_all(self, skip: int = 0, limit: int = 10 ) -> list[TransportCollection]:
-        try:
-            statement = (
-                select(TransportCollection)
-                .options(
-                    joinedload(TransportCollection.driver)
-                )
-                .order_by(TransportCollection.id)
-                .offset(skip)
-                .limit(limit)
+    async def get_all(
+        self,
+        skip: int,
+        limit: int,
+        driver_id: int | None = None,
+        start_date: date | None = None,
+        end_date: date | None = None,
+    ) -> tuple[list[TransportCollection], int]:
+
+        filters = []
+
+        if driver_id is not None:
+            filters.append(
+                TransportCollection.driver_id == driver_id
             )
 
-            result = await self.db.scalars(statement)
-            return list(result.unique().all())
+        if start_date is not None:
+            filters.append(
+                TransportCollection.collection_date >= start_date
+            )
 
-        except SQLAlchemyError as exc:
-            logger.exception("Error retrieving all transport collections")
-            raise RepositoryError("Unable to retrieve collections") from exc
+        if end_date is not None:
+            filters.append(
+                TransportCollection.collection_date <= end_date
+            )
 
+        count_statement = (
+            select(func.count(TransportCollection.id))
+            .where(*filters)
+        )
+
+        total_result = await self.db.scalar(count_statement)
+
+        statement = (
+            select(TransportCollection)
+            .options(joinedload(TransportCollection.driver))
+            .where(*filters)
+            .order_by(TransportCollection.id)
+            .offset(skip)
+            .limit(limit)
+        )
+
+        result = await self.db.scalars(statement)
+
+        return list(result.unique().all()), total_result or 0
+
+
+    
     # Update collection
     async def update_collection( self, 
                                 collection: TransportCollection, 

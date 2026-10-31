@@ -55,3 +55,19 @@ class CollectionResponse(BaseModel):
     total_collection: Decimal
     total_expense: Decimal
     net_collection: Decimal
+
+
+class PaginationMetadata(BaseModel):
+    current_page: int
+    page_size: int
+    total_items: int
+    total_pages: int
+    has_next: bool
+    has_previous: bool
+    next_page: int | None
+    previous_page: int | None
+
+
+class CollectionListResponse(BaseModel):
+    items: list[CollectionResponse]
+    pagination: PaginationMetadata

@@ -10,7 +10,7 @@ from alembic import context
 
 
 from app.database.base import Base
-from app.config.settings import DATABASE_URL
+from app.core.config import DATABASE_URL
 from app.models.driver_model import Driver
 from app.models.transport_collection_model import TransportCollection
 from app.models.user_model import User
