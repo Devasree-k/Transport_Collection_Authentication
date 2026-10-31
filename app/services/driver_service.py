@@ -15,6 +15,7 @@ from app.repositories.interfaces.driver_repository_interface import DriverReposi
 import asyncio
 import logging
 
+from app.schemas.driver_schema import DriverCreate
 from app.services.email_service import EmailService
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ class DriverService:
         self.driver_repository = driver_repository
         self.email_service = email_service
 
-    async def create_driver(self, data)->Driver:
+    async def create_driver(self, data : DriverCreate)->Driver:
         driver = Driver(**data.model_dump())
 
         try:
@@ -56,7 +57,7 @@ class DriverService:
         return driver
 
 
-    async def get_drivers(self, page:int=1, limit : int=10):
+    async def get_drivers(self, page:int=1, limit : int=10)-> list[Driver]:
         if page<1:
             raise ValueError("Page must be greater than 0")
         if limit<1 or limit>100:

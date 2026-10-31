@@ -1,9 +1,9 @@
-# python -m pip install pytest pytest-asyncio httpx aiosqlite
-
-
 from collections.abc import AsyncGenerator
 
 import pytest_asyncio
+
+from httpx import ASGITransport, AsyncClient
+
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -11,7 +11,12 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.pool import StaticPool
 
+from main import app
+
 from app.database.base import Base
+from app.api.dependencies.database import get_database
+
+# Import all models so SQLAlchemy registers their tables.
 from app.models.driver_model import Driver
 from app.models.transport_collection_model import TransportCollection
 
@@ -34,16 +39,16 @@ test_engine = create_async_engine(
 TestingSessionLocal = async_sessionmaker(
     bind=test_engine,
     class_=AsyncSession,
-    autoflush=False,
     expire_on_commit=False,
+    autoflush=False,
 )
 
 
 @pytest_asyncio.fixture
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
-    # Create fresh tables for each test.
+
     async with test_engine.begin() as connection:
-        await connection.run_sync(Base.metadata.create_all) 
+        await connection.run_sync(Base.metadata.create_all)
 
     async with TestingSessionLocal() as db:
         try:
@@ -51,7 +56,6 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
         finally:
             await db.rollback()
 
-    # Remove tables after the test finishes.
     async with test_engine.begin() as connection:
         await connection.run_sync(Base.metadata.drop_all)
 

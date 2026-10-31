@@ -67,4 +67,3 @@ async def home() -> dict[str, str]:
     return {
         "message": "Transport Collection System"
     }
-

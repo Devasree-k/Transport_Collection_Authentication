@@ -97,3 +97,50 @@ def test_transport_collection_calculations():
     assert result["total_collection"] == 12000
     assert result["total_expense"] == 2500
     assert result["net_collection"] == 9500
+
+
+from app.services.transport_collection_service import (
+    TransportCollectionService,
+)
+
+
+def test_calculate_totals():
+
+    data = {
+        "morning_trips": 10,
+        "evening_trips": 15,
+        "morning_collection": 5000,
+        "evening_collection": 7000,
+        "fuel_expense": 2000,
+        "other_expense": 1000,
+    }
+
+    result = TransportCollectionService.calculate_totals(
+        None, data
+    )
+
+    assert result["total_trips"] == 25
+    assert result["total_collection"] == 12000
+    assert result["total_expense"] == 3000
+    assert result["net_collection"] == 9000
+
+
+def test_calculate_totals_when_values_are_zero():
+
+    data = {
+        "morning_trips": 0,
+        "evening_trips": 0,
+        "morning_collection": 0,
+        "evening_collection": 0,
+        "fuel_expense": 0,
+        "other_expense": 0,
+    }
+
+    result = TransportCollectionService.calculate_totals(
+        None, data
+    )
+
+    assert result["total_trips"] == 0
+    assert result["total_collection"] == 0
+    assert result["total_expense"] == 0
+    assert result["net_collection"] == 0
