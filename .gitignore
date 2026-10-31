@@ -1,14 +1,17 @@
-# Python cache files
+# Python cache
 __pycache__/
 *.py[cod]
-*.pyo
 
 # Virtual environment
 .venv/
 
-# Log files
+# Pytest
+.pytest_cache/
+
+# Logs
 logs/
 *.log
 
-# Pytest cache
-.pytest_cache/
+# Environment variables
+.env
+!.env.example
